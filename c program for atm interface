@@ -1,0 +1,155 @@
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_USERS 10
+#define PIN_LENGTH 4
+
+// Structure to hold account details
+typedef struct {
+    int pin;
+    double balance;
+    int isActive;
+} Account;
+
+// Array to store accounts
+Account accounts[MAX_USERS];
+
+// Function to create a new account
+void createAccount() {
+    int pin, i;
+
+    printf("Enter a new 4-digit PIN for your account: ");
+    scanf("%d", &pin);
+
+    // Check if account with this PIN already exists
+    for (i = 0; i < MAX_USERS; i++) {
+        if (accounts[i].pin == pin) {
+            printf("Account with this PIN already exists. Please choose another PIN.\n");
+            return;
+        }
+    }
+
+    // Find an empty slot to create a new account
+    for (i = 0; i < MAX_USERS; i++) {
+        if (accounts[i].isActive == 0) {
+            accounts[i].pin = pin;
+            accounts[i].balance = 0.0;
+            accounts[i].isActive = 1;
+            printf("Account created successfully!\n");
+            return;
+        }
+    }
+
+    printf("Account creation failed. Maximum user limit reached.\n");
+}
+
+// Function for login
+int login() {
+    int pin, i;
+
+    printf("Enter your 4-digit PIN: ");
+    scanf("%d", &pin);
+
+    // Check if the PIN matches any account
+    for (i = 0; i < MAX_USERS; i++) {
+        if (accounts[i].pin == pin && accounts[i].isActive == 1) {
+            return i; // Return account index if found
+        }
+    }
+
+    printf("Incorrect PIN. Access Denied!\n");
+    return -1; // Invalid login
+}
+
+// ATM operations for logged-in user
+void atmOperations(int userIndex) {
+    int choice;
+    double deposit, withdraw;
+    Account *userAccount = &accounts[userIndex];
+
+    while(1) {
+        printf("\nATM Menu:\n");
+        printf("1. Check Balance\n");
+        printf("2. Deposit Money\n");
+        printf("3. Withdraw Money\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch(choice) {
+            case 1:
+                printf("Your current balance is: $%.2f\n", userAccount->balance);
+                break;
+
+            case 2:
+                printf("Enter the amount to deposit: $");
+                scanf("%lf", &deposit);
+                if (deposit > 0) {
+                    userAccount->balance += deposit;
+                    printf("Successfully deposited $%.2f\n", deposit);
+                } else {
+                    printf("Invalid deposit amount.\n");
+                }
+                break;
+
+            case 3:
+                printf("Enter the amount to withdraw: $");
+                scanf("%lf", &withdraw);
+                if (withdraw > 0 && withdraw <= userAccount->balance) {
+                    userAccount->balance -= withdraw;
+                    printf("Successfully withdrawn $%.2f\n", withdraw);
+                } else {
+                    printf("Invalid withdrawal amount or insufficient balance.\n");
+                }
+                break;
+
+            case 4:
+                printf("Thank you for using the ATM. Goodbye!\n");
+                return;  // Exit the ATM operations loop
+
+            default:
+                printf("Invalid choice! Please select a valid option.\n");
+        }
+    }
+}
+
+int main() {
+    int choice, userIndex;
+
+    // Initialize all accounts as inactive
+    for (int i = 0; i < MAX_USERS; i++) {
+        accounts[i].isActive = 0;
+    }
+
+    while(1) {
+        printf("\nATM System\n");
+        printf("1. Create Account\n");
+        printf("2. Login\n");
+        printf("3. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch(choice) {
+            case 1:
+                createAccount();
+                break;
+
+            case 2:
+                userIndex = login();
+                if (userIndex != -1) {
+                    atmOperations(userIndex);
+                }
+                break;
+
+            case 3:
+                printf("Thank you for using the ATM System. Goodbye!\n");
+                return 0;  // Exit the program
+
+            default:
+                printf("Invalid choice! Please select a valid option.\n");
+        }
+    }
+
+    return 0;
+}
+
